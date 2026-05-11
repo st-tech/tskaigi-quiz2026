@@ -2,7 +2,8 @@
 	"compilerOptions": {
 		"target": "ESNext",
 		"module": "ESNext",
-		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"types": ["vite/client"],
 		"allowJs": true,
 		"allowSyntheticDefaultImports": true,
 		"allowImportingTsExtensions": true,
@@ -17,6 +18,8 @@
 		"strict": true,
 		"noEmit": true,
 		"isolatedModules": true,
+		"skipLibCheck": true,
 		"plugins": [{ "name": "@tsrx/typescript-plugin" }]
-	}
+	},
+	"exclude": ["dist"]
 }

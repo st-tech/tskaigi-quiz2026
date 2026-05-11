@@ -1,148 +1,173 @@
 import { track } from 'ripple';
 
+import { getQuestionsForDay } from './data/questions.public';
+import { IntroScreen } from './components/IntroScreen.tsrx';
+import { QrDisplay } from './components/QrDisplay.tsrx';
+import { QuestionScreen } from './components/QuestionScreen.tsrx';
+import { ReviewScreen } from './components/ReviewScreen.tsrx';
+import { TerminalLayout } from './components/TerminalLayout.tsrx';
+import { loadAnswerSet, saveAnswerSet } from './lib/storage';
+import type { AnswerEntry, AnswerSet, Day } from './lib/types';
+import { getOrCreateUserId } from './lib/userId';
+
+type Screen = { kind: 'intro' } | { kind: 'quiz'; index: number } | { kind: 'review' } | {
+	kind: 'qr';
+};
+
+const day = readDay();
+const userId = getOrCreateUserId();
+const questions = getQuestionsForDay(day);
+const storedAnswerSet = loadAnswerSet(day);
+const savedAnswerSet =
+	storedAnswerSet && matchesQuestions(storedAnswerSet.answers) ? storedAnswerSet : null;
+const initialAnswers =
+	savedAnswerSet
+		? savedAnswerSet.answers
+		: questions.map(
+				(question) => ({
+					questionId: question.id,
+					answerId: null,
+				}),
+			);
+
 export component App() {
-	let &[count] = track(0);
+	let &[screen] = track<Screen>(savedAnswerSet ? { kind: 'qr' } : { kind: 'intro' });
+	let &[answers] = track<AnswerEntry[]>(initialAnswers);
+	let &[submitted] = track<AnswerSet | null>(savedAnswerSet);
 
-	<div class="app">
-		<div class="card">
-			<img src="../src/assets/ripple-logo-horizontal.png" alt="Ripple Logo" class="logo" />
+	const setAnswer = (questionId: string, answerId: string) => {
+		answers = answers.map(
+			(answer) => (answer.questionId === questionId ? { ...answer, answerId } : answer),
+		);
+	};
 
-			<p class="subtitle">{'The elegant TypeScript UI framework.'}</p>
+	const submit = () => {
+		if (countAnswered(answers) !== questions.length) return;
 
-			<div class="counter">
-				<button onClick={() => count--}>{'-'}</button>
-				<span class="count">{count}</span>
-				<button onClick={() => count++}>{'+'}</button>
-			</div>
+		const next: AnswerSet = {
+			userId,
+			answers,
+			submittedAt: Date.now(),
+		};
+		saveAnswerSet(day, next);
+		submitted = next;
+		screen = { kind: 'qr' };
+	};
 
-			<div class="links">
-				<a href="https://www.ripple-ts.com/" target="_blank" class="link-btn docs">
-					{'Docs'}
-				</a>
-				<a
-					href="https://github.com/Ripple-TS/ripple"
-					target="_blank"
-					class="link-btn github"
-				>
-					{'GitHub'}
-				</a>
-			</div>
-
-			<p class="info">{'This is a basic Ripple application template.'}</p>
-			<p class="edit-hint">
-				{'Edit '}
-				<code>{'src/App.tsrx'}</code>
-				{' to get started.'}
-			</p>
-		</div>
-	</div>
-
-	<style>
-		.app {
-			min-height: 100vh;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			background: radial-gradient(circle at top left, #1a1c2b, #0d0e17 85%);
-			color: #f2f4f8;
-			font-family: 'Inter', 'Segoe UI', sans-serif;
-			letter-spacing: 0.25px;
-			padding: 1rem;
+	<TerminalLayout>
+		switch (screen.kind) {
+			case 'intro':
+				<IntroScreen
+					{day}
+					total={questions.length}
+					answered={countAnswered(answers)}
+					{userId}
+					hasSubmitted={submitted !== null}
+					onStart={() => (screen = {
+						kind: 'quiz',
+						index: firstUnansweredIndex(answers),
+					})}
+					onShowQr={() => (screen = { kind: 'qr' })}
+				/>
+				break;
+			case 'quiz':
+				<QuestionScreen
+					question={currentQuestion(screen)}
+					index={currentQuizIndex(screen)}
+					total={questions.length}
+					selected={findAnswer(answers, currentQuestion(screen).id)}
+					onSelect={(answer) => setAnswer(currentQuestion(screen).id, answer)}
+					onBack={() => {
+						const currentIndex = currentQuizIndex(screen);
+						screen = currentIndex === 0
+							? { kind: 'intro' }
+							: { kind: 'quiz', index: currentIndex - 1 };
+					}}
+					onNext={() => {
+						const currentIndex = currentQuizIndex(screen);
+						screen = currentIndex === questions.length - 1
+							? { kind: 'review' }
+							: { kind: 'quiz', index: currentIndex + 1 };
+					}}
+				/>
+				break;
+			case 'review':
+				<ReviewScreen
+					{questions}
+					{answers}
+					onEdit={(index) => (screen = { kind: 'quiz', index })}
+					onSubmit={submit}
+					onBack={() => (screen = { kind: 'quiz', index: questions.length - 1 })}
+				/>
+				break;
+			case 'qr':
+				const answerSet = submitted;
+				if (answerSet) {
+					<QrDisplay {day} {answerSet} onRestart={() => (screen = { kind: 'quiz', index: 0 })} />
+				} else {
+					<IntroScreen
+						{day}
+						total={questions.length}
+						answered={countAnswered(answers)}
+						{userId}
+						hasSubmitted={false}
+						onStart={() => (screen = {
+							kind: 'quiz',
+							index: firstUnansweredIndex(answers),
+						})}
+						onShowQr={() => (screen = { kind: 'intro' })}
+					/>
+				}
+				break;
 		}
+	</TerminalLayout>
+}
 
-		.card {
-			background: rgba(18, 19, 29, 0.75);
-			padding: 2.5rem 2rem;
-			border-radius: 1rem;
-			text-align: center;
-			border: 1px solid rgba(255, 255, 255, 0.1);
-			backdrop-filter: blur(10px);
-			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-			max-width: 400px;
-			box-sizing: border-box;
-		}
+function readDay(): Day {
+	return getJstDayOfMonth() % 2 === 0 ? 1 : 2;
+}
 
-		.logo {
-			width: 160px;
-			margin-bottom: 1rem;
-			display: block;
-			margin-left: auto;
-			margin-right: auto;
-		}
+function getJstDayOfMonth(now = new Date()): number {
+	return Number(
+		new Intl.DateTimeFormat('en-US', {
+			timeZone: 'Asia/Tokyo',
+			day: 'numeric',
+		}).format(now),
+	);
+}
 
-		.subtitle {
-			color: #b0b3c2;
-			font-size: 1rem;
-			margin-bottom: 1.5rem;
-			font-weight: 500;
-		}
+function firstUnansweredIndex(answers: AnswerEntry[]): number {
+	const index = questions.findIndex((question) => findAnswer(answers, question.id) === null);
+	return index === -1 ? 0 : index;
+}
 
-		.counter {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			gap: 1rem;
-			margin: 1.5rem 0;
-		}
+function currentQuizIndex(screen: Screen): number {
+	return screen.kind === 'quiz' ? screen.index : 0;
+}
 
-		button {
-			background-color: rgba(58, 58, 72, 0.9);
-			color: #f2f4f8;
-			font-size: 1.1rem;
-			border: 1px solid rgba(255, 255, 255, 0.1);
-			border-radius: 0.75rem;
-			padding: 0.5rem 1rem;
-			cursor: pointer;
-			transition: background 0.15s ease;
-		}
+function currentQuestion(screen: Screen) {
+	return questions[currentQuizIndex(screen)] ?? questions[0];
+}
 
-		.count {
-			font-size: 1.4rem;
-			font-weight: 500;
-			color: #f2f4f8;
-			min-width: 2rem;
-			display: inline-block;
-			text-align: center;
-		}
+function findAnswer(answers: AnswerEntry[], questionId: string): string | null {
+	return answers.find((answer) => answer.questionId === questionId)?.answerId ?? null;
+}
 
-		.links {
-			display: flex;
-			justify-content: center;
-			gap: 0.75rem;
-			margin-top: 1.5rem;
-		}
+function countAnswered(answers: AnswerEntry[]): number {
+	return answers.filter((answer) => answer.answerId !== null).length;
+}
 
-		.link-btn {
-			text-decoration: none;
-			padding: 0.45rem 1.2rem;
-			border-radius: 0.75rem;
-			font-weight: 500;
-			font-size: 0.95rem;
-			background-color: rgba(58, 58, 72, 0.9);
-			color: #f2f4f8;
-			border: 1px solid rgba(255, 255, 255, 0.1);
-			transition: background 0.15s ease;
-		}
+function matchesQuestions(answers: AnswerEntry[]): boolean {
+	const questionChoicesById = new Map<string, Set<string>>();
+	for (const question of questions) {
+		questionChoicesById.set(question.id, new Set(question.choices.map((choice) => choice.id)));
+	}
 
-		.info {
-			margin-top: 1.5rem;
-			font-size: 0.9rem;
-			color: #c8cbda;
-		}
-
-		.edit-hint {
-			margin-top: 0.3rem;
-			font-size: 0.8rem;
-			color: #9fa3b9;
-		}
-
-		code {
-			background-color: rgba(31, 32, 46, 0.9);
-			padding: 2px 6px;
-			border-radius: 0.4rem;
-			font-family: 'Fira Code', monospace;
-			color: #a8b2ff;
-			font-size: 0.88rem;
-		}
-	</style>
+	if (answers.length !== questions.length) return false;
+	for (const answer of answers) {
+		const choices = questionChoicesById.get(answer.questionId);
+		if (choices === undefined) return false;
+		if (answer.answerId !== null && !choices.has(answer.answerId)) return false;
+	}
+	return true;
 }

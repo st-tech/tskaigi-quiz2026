@@ -1,7 +1,14 @@
 import { mount } from 'ripple';
-// @ts-expect-error: known issue, we're working on it
 import { App } from './App.tsrx';
 
+import '@fontsource-variable/intel-one-mono/wght.css';
+import './index.css';
+
+const target = document.getElementById('root');
+if (!target) {
+	throw new Error('Root element was not found.');
+}
+
 mount(App, {
-	target: document.getElementById('root'),
+	target,
 });
