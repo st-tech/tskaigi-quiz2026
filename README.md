@@ -9,3 +9,5 @@ TSKaigi 2026 ブースクイズの来場者用アプリです。
 pnpm install
 pnpm dev
 ```
+
+\* tskaigi-quiz2026-staff リポジトリのgit submoduleとして併せて開発されています。AI開発時はstaffリポジトリ側をワークスペースディレクトリとしてください。
