@@ -11,3 +11,11 @@ pnpm dev
 ```
 
 \* tskaigi-quiz2026-staff リポジトリのgit submoduleとして併せて開発されています。AI開発時はstaffリポジトリ側をワークスペースディレクトリとしてください。
+
+## License
+
+MIT
+
+---
+
+Copyright &copy; ZOZO, Inc.
