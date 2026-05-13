@@ -72,7 +72,7 @@ export const QUESTIONS = [
 		day: 2,
 		category: 'typescript',
 		title: 'satisfies の正しい挙動は？',
-		code: 'const x = { a: 1, b: 2 } satisfies { a: number };',
+		code: 'const x = { a: 1, b: 2 } satisfies { a: number; b: unknown };',
 		lang: 'ts',
 		choices: [
 			{
@@ -81,7 +81,7 @@ export const QUESTIONS = [
 			},
 			{
 				id: 'fd42',
-				text: 'x の型は { a: number }',
+				text: 'x の型は { a: number; b: unknown }',
 			},
 			{
 				id: '61a7',
