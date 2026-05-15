@@ -34,3 +34,20 @@ export interface QrPayload {
 	a: AnswerEntry[];
 	t: number;
 }
+
+export interface AnswerKeyEntry {
+	questionId: string;
+	answerId: string;
+}
+
+export interface AnswerCheck {
+	answerKey: AnswerKeyEntry[];
+	checkedAt: number;
+}
+
+export interface AnswerResultEntry {
+	questionId: string;
+	selectedAnswerId: string | null;
+	correctAnswerId: string;
+	status: 'correct' | 'wrong' | 'unanswered';
+}

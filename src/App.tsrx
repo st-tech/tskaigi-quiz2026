@@ -1,18 +1,28 @@
 import { track } from 'ripple';
 
 import { getQuestionsForDay } from './data/questions.public';
+import { AnswerResultScreen } from './components/AnswerResultScreen.tsrx';
+import { BoothGuide } from './components/BoothGuide.tsrx';
 import { IntroScreen } from './components/IntroScreen.tsrx';
-import { QrDisplay } from './components/QrDisplay.tsrx';
 import { QuestionScreen } from './components/QuestionScreen.tsrx';
 import { ReviewScreen } from './components/ReviewScreen.tsrx';
+import { ResultQrScanner } from './components/ResultQrScanner.tsrx';
 import { TerminalLayout } from './components/TerminalLayout.tsrx';
-import { loadAnswerSet, saveAnswerSet } from './lib/storage';
-import type { AnswerEntry, AnswerSet, Day } from './lib/types';
+import { AnswerKeyCodecError, decodeAnswerKey } from './lib/answer-key-codec';
+import { loadAnswerCheck, loadAnswerSet, saveAnswerCheck, saveAnswerSet } from './lib/storage';
+import type {
+	AnswerCheck,
+	AnswerEntry,
+	AnswerKeyEntry,
+	AnswerSet,
+	Day,
+	PublicQuestion,
+} from './lib/types';
 import { getOrCreateUserId } from './lib/userId';
 
 type Screen = { kind: 'intro' } | { kind: 'quiz'; index: number } | { kind: 'review' } | {
-	kind: 'qr';
-};
+	kind: 'booth';
+} | { kind: 'scan-result-qr' } | { kind: 'result' };
 
 const day = readDay();
 const userId = getOrCreateUserId();
@@ -20,6 +30,11 @@ const questions = getQuestionsForDay(day);
 const storedAnswerSet = loadAnswerSet(day);
 const savedAnswerSet =
 	storedAnswerSet && matchesQuestions(storedAnswerSet.answers) ? storedAnswerSet : null;
+const storedAnswerCheck = loadAnswerCheck(day);
+const savedAnswerCheck =
+	savedAnswerSet && storedAnswerCheck && matchesAnswerKey(storedAnswerCheck.answerKey)
+		? storedAnswerCheck
+		: null;
 const initialAnswers =
 	savedAnswerSet
 		? savedAnswerSet.answers
@@ -31,17 +46,27 @@ const initialAnswers =
 			);
 
 export component App() {
-	let &[screen] = track<Screen>(savedAnswerSet ? { kind: 'qr' } : { kind: 'intro' });
+	let &[screen] = track<Screen>(
+		savedAnswerSet
+			? savedAnswerCheck
+				? { kind: 'result' }
+				: { kind: 'booth' }
+			: { kind: 'intro' },
+	);
 	let &[answers] = track<AnswerEntry[]>(initialAnswers);
 	let &[submitted] = track<AnswerSet | null>(savedAnswerSet);
+	let &[answerCheck] = track<AnswerCheck | null>(savedAnswerCheck);
+	let &[error] = track<string | null>(null);
 
 	const setAnswer = (questionId: string, answerId: string) => {
+		if (answerCheck !== null) return;
 		answers = answers.map(
 			(answer) => (answer.questionId === questionId ? { ...answer, answerId } : answer),
 		);
 	};
 
 	const submit = () => {
+		if (answerCheck !== null) return;
 		if (countAnswered(answers) !== questions.length) return;
 
 		const next: AnswerSet = {
@@ -51,10 +76,43 @@ export component App() {
 		};
 		saveAnswerSet(day, next);
 		submitted = next;
-		screen = { kind: 'qr' };
+		error = null;
+		screen = { kind: 'booth' };
+	};
+
+	const handleAnswerKeyScan = (rawValue: string) => {
+		if (answerCheck !== null) {
+			error = null;
+			screen = { kind: 'result' };
+			return;
+		}
+
+		try {
+			const answerKey = decodeAnswerKey(rawValue);
+			validateAnswerKeyForQuestions(answerKey, questions);
+			const nextAnswerCheck = {
+				answerKey,
+				checkedAt: Date.now(),
+			};
+			saveAnswerCheck(day, nextAnswerCheck);
+			answerCheck = nextAnswerCheck;
+			error = null;
+			screen = { kind: 'result' };
+		} catch (scanError) {
+			error = scanError instanceof AnswerKeyCodecError
+				? '正答QRを読み取れませんでした。スタッフ画面のQRを読み取ってください。'
+				: scanError instanceof Error
+					? scanError.message
+					: '正答QRを読み取れませんでした。';
+			screen = { kind: 'booth' };
+		}
 	};
 
 	<TerminalLayout>
+		if (error) {
+			<p class="error">{error}</p>
+		}
+
 		switch (screen.kind) {
 			case 'intro':
 				<IntroScreen
@@ -63,11 +121,15 @@ export component App() {
 					answered={countAnswered(answers)}
 					{userId}
 					hasSubmitted={submitted !== null}
+					hasChecked={answerCheck !== null}
 					onStart={() => (screen = {
 						kind: 'quiz',
 						index: firstUnansweredIndex(answers),
 					})}
-					onShowQr={() => (screen = { kind: 'qr' })}
+					onShowBoothGuide={() => {
+						error = null;
+						screen = answerCheck ? { kind: 'result' } : { kind: 'booth' };
+					}}
 				/>
 				break;
 			case 'quiz':
@@ -100,27 +162,89 @@ export component App() {
 					onBack={() => (screen = { kind: 'quiz', index: questions.length - 1 })}
 				/>
 				break;
-			case 'qr':
+			case 'booth':
 				const answerSet = submitted;
 				if (answerSet) {
-					<QrDisplay {day} {answerSet} onRestart={() => (screen = { kind: 'quiz', index: 0 })} />
+					<BoothGuide
+						{day}
+						total={questions.length}
+						answered={countAnswered(answerSet.answers)}
+						{userId}
+						onStartScan={() => {
+							error = null;
+							screen = { kind: 'scan-result-qr' };
+						}}
+						onEdit={() => {
+							error = null;
+							screen = { kind: 'quiz', index: 0 };
+						}}
+					/>
 				} else {
 					<IntroScreen
 						{day}
 						total={questions.length}
 						answered={countAnswered(answers)}
 						{userId}
+						hasChecked={false}
 						hasSubmitted={false}
 						onStart={() => (screen = {
 							kind: 'quiz',
 							index: firstUnansweredIndex(answers),
 						})}
-						onShowQr={() => (screen = { kind: 'intro' })}
+						onShowBoothGuide={() => (screen = { kind: 'intro' })}
+					/>
+				}
+				break;
+			case 'scan-result-qr':
+				<ResultQrScanner
+					onScan={handleAnswerKeyScan}
+					onError={(message) => (error = message)}
+					onCancel={() => {
+						error = null;
+						screen = { kind: 'booth' };
+					}}
+				/>
+				break;
+			case 'result':
+				const currentAnswerCheck = answerCheck;
+				if (currentAnswerCheck) {
+					<AnswerResultScreen
+						{questions}
+						answers={submitted?.answers ?? answers}
+						answerKey={currentAnswerCheck.answerKey}
+						checkedAt={currentAnswerCheck.checkedAt}
+					/>
+				} else {
+					<BoothGuide
+						{day}
+						total={questions.length}
+						answered={countAnswered(submitted?.answers ?? answers)}
+						{userId}
+						onStartScan={() => {
+							error = null;
+							screen = { kind: 'scan-result-qr' };
+						}}
+						onEdit={() => {
+							error = null;
+							screen = { kind: 'quiz', index: 0 };
+						}}
 					/>
 				}
 				break;
 		}
 	</TerminalLayout>
+
+	<style>
+		.error {
+			margin: 0 0 0.75rem;
+			padding: 0.65rem;
+			border: 1px solid #e06c75;
+			background: #2b171a;
+			color: #ffb4b4;
+			font-size: 0.86rem;
+			line-height: 1.5;
+		}
+	</style>
 }
 
 function readDay(): Day {
@@ -170,4 +294,42 @@ function matchesQuestions(answers: AnswerEntry[]): boolean {
 		if (answer.answerId !== null && !choices.has(answer.answerId)) return false;
 	}
 	return true;
+}
+
+function matchesAnswerKey(answerKey: AnswerKeyEntry[]): boolean {
+	try {
+		validateAnswerKeyForQuestions(answerKey, questions);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+function validateAnswerKeyForQuestions(
+	answerKey: AnswerKeyEntry[],
+	questionsForDay: PublicQuestion[],
+): void {
+	const questionsById = new Map(questionsForDay.map((question) => [question.id, question]));
+	const answerKeyByQuestionId = new Map(answerKey.map(
+		(entry) => [entry.questionId, entry.answerId],
+	));
+
+	const unknownEntry = answerKey.find((entry) => !questionsById.has(entry.questionId));
+	if (unknownEntry) {
+		throw new Error('この日の正答QRではありません。スタッフに当日のQRを表示してもらってください。');
+	}
+
+	const missingQuestion = questionsForDay.find(
+		(question) => !answerKeyByQuestionId.has(question.id),
+	);
+	if (missingQuestion) {
+		throw new Error('正答QRに必要な問題が含まれていません。スタッフにQRを確認してもらってください。');
+	}
+
+	for (const question of questionsForDay) {
+		const answerId = answerKeyByQuestionId.get(question.id);
+		if (answerId === undefined || !question.choices.some((choice) => choice.id === answerId)) {
+			throw new Error('正答QRに不明な選択肢が含まれています。スタッフにQRを確認してもらってください。');
+		}
+	}
 }

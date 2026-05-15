@@ -1,25 +1,24 @@
-export component IntroScreen(&{
+export component BoothGuide(&{
 	day,
 	total,
 	answered,
 	userId,
-	hasSubmitted,
-	hasChecked,
-	onStart,
-	onShowBoothGuide,
+	onStartScan,
+	onEdit,
 }: {
 	day: 1 | 2;
 	total: number;
 	answered: number;
 	userId: string;
-	hasSubmitted: boolean;
-	hasChecked: boolean;
-	onStart: () => void;
-	onShowBoothGuide: () => void;
+	onStartScan: () => void;
+	onEdit: () => void;
 }) {
-	<section class="intro" aria-labelledby="intro-title">
-		<p class="eyebrow">{`day ${day} / id ${userId}`}</p>
-		<h2 id="intro-title">{'TSKaigi 2026 Booth Quiz'}</h2>
+	<section class="booth" aria-labelledby="booth-title">
+		<p class="eyebrow">{`submitted / day ${day} / id ${userId}`}</p>
+		<h2 id="booth-title">{'ブースで結果を確認してください'}</h2>
+		<p class="lead">
+			{'スタッフが提示するQRコードをこの端末で読み取ると、あなたの回答の正誤を確認できます。'}
+		</p>
 		<dl class="status" aria-label="回答状況">
 			<div>
 				<dt>{'Questions'}</dt>
@@ -31,28 +30,13 @@ export component IntroScreen(&{
 			</div>
 		</dl>
 		<div class="actions">
-			<button
-				type="button"
-				class="primary"
-				aria-label={answered > 0 ? '未回答の問題から再開' : 'クイズを開始'}
-				onClick={() => onStart()}
-			>
-				{answered > 0 ? 'Continue' : 'Start'}
-			</button>
-			if (hasSubmitted) {
-				<button
-					type="button"
-					aria-label={hasChecked ? '確認済みの結果を表示' : 'ブースで結果を確認する'}
-					onClick={() => onShowBoothGuide()}
-				>
-					{hasChecked ? 'Show result' : 'Check result'}
-				</button>
-			}
+			<button type="button" class="primary" onClick={() => onStartScan()}>{'Start camera'}</button>
+			<button type="button" onClick={() => onEdit()}>{'Edit answers'}</button>
 		</div>
 	</section>
 
 	<style>
-		.intro {
+		.booth {
 			display: grid;
 			gap: 0.9rem;
 		}
@@ -66,8 +50,15 @@ export component IntroScreen(&{
 		h2 {
 			margin: 0;
 			color: #f3f7f0;
-			font-size: 1.35rem;
-			line-height: 1.25;
+			font-size: 1.28rem;
+			line-height: 1.35;
+		}
+
+		.lead {
+			margin: 0;
+			color: #d8e2ea;
+			font-size: 0.9rem;
+			line-height: 1.65;
 		}
 
 		.status {
