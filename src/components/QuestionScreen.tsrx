@@ -48,7 +48,7 @@ export component QuestionScreen(&{
 			<button type="button" onClick={() => onBack()}>
 				{index === 0 ? 'Top' : 'Back'}
 			</button>
-			<button type="button" class="primary" onClick={() => onNext()}>
+			<button type="button" class="primary" disabled={selected === null} onClick={() => onNext()}>
 				{index === total - 1 ? 'Review' : 'Next'}
 			</button>
 		</div>
@@ -143,6 +143,11 @@ export component QuestionScreen(&{
 
 		.actions button {
 			min-width: 6rem;
+		}
+
+		button:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
 		}
 
 		button.primary {
