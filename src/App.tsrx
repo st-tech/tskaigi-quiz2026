@@ -213,6 +213,7 @@ export component App() {
 						answers={submitted?.answers ?? answers}
 						answerKey={currentAnswerCheck.answerKey}
 						checkedAt={currentAnswerCheck.checkedAt}
+						{day}
 					/>
 				} else {
 					<BoothGuide

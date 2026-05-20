@@ -1,4 +1,6 @@
-import type { AnswerEntry, AnswerKeyEntry, AnswerResultEntry, PublicQuestion } from '../lib/types';
+import { track } from 'ripple';
+
+import type { AnswerEntry, AnswerKeyEntry, AnswerResultEntry, Day, PublicQuestion } from '../lib/types';
 
 const RAINBOW_THRESHOLD = 7;
 
@@ -7,17 +9,34 @@ export component AnswerResultScreen(&{
 	answers,
 	answerKey,
 	checkedAt,
+	day,
 }: {
 	questions: PublicQuestion[];
 	answers: AnswerEntry[];
 	answerKey: AnswerKeyEntry[];
 	checkedAt: number;
+	day: Day;
 }) {
 	const results = buildResults(questions, answers, answerKey);
 	const correctCount = results.filter((result) => result.status === 'correct').length;
 	const isRainbow = correctCount >= RAINBOW_THRESHOLD;
 	const total = results.length;
 	const isPerfect = total > 0 && correctCount === total;
+	const shareText = buildShareText(day, correctCount, total, isPerfect);
+	let &[copyStatus] = track<'idle' | 'copied' | 'error'>('idle');
+
+	const copyShare = async () => {
+		const payload = shareText;
+		try {
+			await navigator.clipboard.writeText(payload);
+			copyStatus = 'copied';
+		} catch (_) {
+			copyStatus = 'error';
+		}
+		window.setTimeout(() => {
+			copyStatus = 'idle';
+		}, 2000);
+	};
 
 	<section class="result" aria-labelledby="answer-result-title">
 		<ol class="answers" aria-label="正誤結果">
@@ -67,6 +86,23 @@ export component AnswerResultScreen(&{
 				<p class="meta">{`${formatDate(checkedAt)} / 詳しい説明は後日公開予定です。`}</p>
 			</div>
 
+		</div>
+
+		<div class="share" aria-label="結果をシェア">
+			<p class="share-eyebrow">{'share your score'}</p>
+			<div class="share-buttons">
+				<a
+					class="share-btn x"
+					href={buildXUrl(shareText)}
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					{'Post on X'}
+				</a>
+				<button type="button" class="share-btn copy" onClick={() => copyShare()}>
+					{copyStatus === 'copied' ? 'Copied!' : copyStatus === 'error' ? 'Copy failed' : 'Copy text'}
+				</button>
+			</div>
 		</div>
 	</section>
 
@@ -220,6 +256,60 @@ export component AnswerResultScreen(&{
 				gap: 0.1rem;
 			}
 		}
+		.share {
+			display: grid;
+			gap: 0.55rem;
+			margin-top: 1.2rem;
+			padding-top: 1rem;
+			border-top: 1px solid #34404d;
+		}
+
+		.share-eyebrow {
+			margin: 0;
+			color: #8bd49c;
+			font-size: 0.78rem;
+			letter-spacing: 0.18em;
+			text-transform: uppercase;
+			text-align: center;
+		}
+
+		.share-buttons {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.55rem;
+			justify-content: center;
+		}
+
+		.share-btn {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-height: 2.4rem;
+			padding: 0.45rem 0.95rem;
+			border-radius: 4px;
+			border: 1px solid #34404d;
+			background: #121820;
+			color: #d8e2ea;
+			font: inherit;
+			font-size: 0.85rem;
+			text-decoration: none;
+			cursor: pointer;
+			transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+		}
+
+		.share-btn:hover {
+			background: #1a2330;
+		}
+
+		.share-btn.x:hover {
+			border-color: #f3f7f0;
+			color: #f3f7f0;
+		}
+
+		.share-btn.copy {
+			font-variant-numeric: tabular-nums;
+			min-width: 7rem;
+		}
 	</style>
 }
 
@@ -270,3 +360,18 @@ function formatDate(value: number): string {
 	}).format(value);
 }
 
+
+function buildShareText(day: Day, correctCount: number, total: number, isPerfect: boolean): string {
+	const score = isPerfect ? `${total}問全問正解！🎉` : `${correctCount}問正解！🙌`;
+	return [
+		'TSKaigi 2026のZOZOブースでTypeScriptクイズに挑戦しました！',
+		`Day${day}の結果は...${score}`,
+		'',
+		'#TSKaigi #TSKaigi2026 #ZOZO',
+	].join('\n');
+}
+
+function buildXUrl(text: string): string {
+	const params = new URLSearchParams({ text });
+	return `https://twitter.com/intent/tweet?${params.toString()}`;
+}
