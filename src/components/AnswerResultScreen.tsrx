@@ -1,5 +1,7 @@
 import type { AnswerEntry, AnswerKeyEntry, AnswerResultEntry, PublicQuestion } from '../lib/types';
 
+const RAINBOW_THRESHOLD = 7;
+
 export component AnswerResultScreen(&{
 	questions,
 	answers,
@@ -13,19 +15,11 @@ export component AnswerResultScreen(&{
 }) {
 	const results = buildResults(questions, answers, answerKey);
 	const correctCount = results.filter((result) => result.status === 'correct').length;
-	const percent =
-		results.length === 0 ? 0 : Math.round((correctCount / results.length) * 100);
+	const isRainbow = correctCount >= RAINBOW_THRESHOLD;
+	const total = results.length;
+	const isPerfect = total > 0 && correctCount === total;
 
 	<section class="result" aria-labelledby="answer-result-title">
-		<div class="summary">
-			<div>
-				<p class="eyebrow">{'answer result'}</p>
-				<h2 id="answer-result-title">{`${correctCount} / ${results.length} correct`}</h2>
-				<p class="meta">{`${formatDate(checkedAt)} / 詳しい説明は後日公開予定です。`}</p>
-			</div>
-			<strong class="score" aria-label={`正答率 ${percent}%`}>{`${percent}%`}</strong>
-		</div>
-
 		<ol class="answers" aria-label="正誤結果">
 			for (const question of questions; index index; key question.id) {
 				const result = results.find((entry) => entry.questionId === question.id);
@@ -59,6 +53,21 @@ export component AnswerResultScreen(&{
 				</li>
 			}
 		</ol>
+
+		<div class="summary">
+			<div class="summary-head">
+				<h1>{'answer result'}</h1>
+				<h2
+					id="answer-result-title"
+					class={isRainbow ? 'score-text rainbow' : 'score-text'}
+					aria-label={`正解数 ${correctCount} / ${total}`}
+				>
+					{`${correctCount} / ${total} correct${isPerfect ? '!!' : ''}`}
+				</h2>
+				<p class="meta">{`${formatDate(checkedAt)} / 詳しい説明は後日公開予定です。`}</p>
+			</div>
+
+		</div>
 	</section>
 
 	<style>
@@ -68,12 +77,16 @@ export component AnswerResultScreen(&{
 		}
 
 		.summary {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			gap: 1rem;
-			border-bottom: 1px solid #34404d;
-			padding-bottom: 0.75rem;
+			display: grid;
+			gap: 0.85rem;
+			border-top: 1px solid #34404d;
+			padding-top: 1rem;
+		}
+
+		.summary-head {
+			display: grid;
+			gap: 0.2rem;
+			text-align: center;
 		}
 
 		.eyebrow,
@@ -83,28 +96,57 @@ export component AnswerResultScreen(&{
 			font-size: 0.78rem;
 		}
 
-		.eyebrow {
-			color: #8bd49c;
+		.meta {
+			margin-bottom: 2rem;
 		}
 
 		h2,
 		h3 {
-			margin: 0.2rem 0;
+			margin: 0.2rem;
 			color: #f3f7f0;
-			line-height: 1.3;
+			line-height: 1.2;
 		}
 
-		h2 {
-			font-size: 1.2rem;
+		.score-text {
+			font-size: 2.4rem;
+			font-weight: 700;
+			letter-spacing: 0.02em;
+			color: #8bd49c;
+			margin-bottom: 2rem;
+		}
+
+		.score-text.rainbow {
+			background: linear-gradient(
+				90deg,
+				#ff6ec7 0%,
+				#ff8c42 14%,
+				#ffd166 28%,
+				#8be78b 42%,
+				#4fc3f7 56%,
+				#9b8cff 70%,
+				#ff6ec7 84%,
+				#ff8c42 100%
+			);
+			background-size: 300% auto;
+			-webkit-background-clip: text;
+			background-clip: text;
+			color: transparent;
+			-webkit-text-fill-color: transparent;
+			animation: rainbow-shift 6s linear infinite;
+			filter: drop-shadow(0 0 0.45rem rgba(255, 110, 199, 0.25));
+		}
+
+		@keyframes rainbow-shift {
+			0% {
+				background-position: 0% 50%;
+			}
+			100% {
+				background-position: 300% 50%;
+			}
 		}
 
 		h3 {
 			font-size: 0.98rem;
-		}
-
-		.score {
-			font-size: 2rem;
-			color: #8bd49c;
 		}
 
 		.answers {
@@ -169,12 +211,8 @@ export component AnswerResultScreen(&{
 		}
 
 		@media (max-width: 640px) {
-			.summary {
-				align-items: flex-start;
-			}
-
-			.score {
-				font-size: 1.5rem;
+			.score-text {
+				font-size: 2rem;
 			}
 
 			dl div {
@@ -231,3 +269,4 @@ function formatDate(value: number): string {
 		minute: '2-digit',
 	}).format(value);
 }
+
