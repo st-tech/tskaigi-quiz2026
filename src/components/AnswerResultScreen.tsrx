@@ -1,6 +1,7 @@
 import { track } from 'ripple';
 
 import type { AnswerEntry, AnswerKeyEntry, AnswerResultEntry, Day, PublicQuestion } from '../lib/types';
+import { CodeBlock } from './CodeBlock.tsrx';
 
 const RAINBOW_THRESHOLD = 7;
 
@@ -48,24 +49,32 @@ export component AnswerResultScreen(&{
 				const correctText = choiceText(question, correctId);
 				const status = result?.status ?? 'unanswered';
 				<li class={status === 'correct' ? 'answer correct' : 'answer incorrect'}>
-					<details open={status !== 'correct'}>
-						<summary>
-							<span class="marker" aria-hidden="true" />
-							<span class="num">{String(index + 1).padStart(2, '0')}</span>
+					<div class="answer-head">
+						<div class="head-row">
+							<span class="num">{`question ${index + 1} / ${total}`}</span>
 							<strong class="status">{status === 'correct' ? 'correct' : 'incorrect'}</strong>
-							<span class="title">{question.title}</span>
-						</summary>
-						<dl>
-							<div>
-								<dt>{'Your answer'}</dt>
-								<dd>{selectedText}</dd>
-							</div>
-							<div>
-								<dt>{'Correct answer'}</dt>
-								<dd>{correctText}</dd>
-							</div>
-						</dl>
-					</details>
+						</div>
+						<h3 class="title">{question.title}</h3>
+					</div>
+					if (question.code && question.lang) {
+						<details class="code-toggle">
+							<summary>
+								<span class="marker" aria-hidden="true" />
+								<span class="hint" />
+							</summary>
+							<CodeBlock code={question.code} lang={question.lang} />
+						</details>
+					}
+					<dl class="answer-dl">
+						<div>
+							<dt>{'Your answer'}</dt>
+							<dd>{selectedText}</dd>
+						</div>
+						<div>
+							<dt>{'Correct answer'}</dt>
+							<dd>{correctText}</dd>
+						</div>
+					</dl>
 				</li>
 			}
 		</ol>
@@ -107,6 +116,8 @@ export component AnswerResultScreen(&{
 		.result {
 			display: grid;
 			gap: 0.9rem;
+			min-width: 0;
+			overflow: hidden;
 		}
 
 		.summary {
@@ -189,6 +200,8 @@ export component AnswerResultScreen(&{
 		.answer {
 			border: 1px solid #34404d;
 			background: #0f151c;
+			overflow: hidden;
+			min-width: 0;
 		}
 
 		.answer.correct {
@@ -199,40 +212,22 @@ export component AnswerResultScreen(&{
 			border-left: 4px solid #e06c75;
 		}
 
-		.answer details summary {
+		.answer-head {
+			padding: 0.85rem 0.85rem 0.5rem;
 			display: grid;
-			grid-template-columns: 1.1rem 2rem auto 1fr;
-			gap: 0.55rem;
-			align-items: baseline;
-			padding: 0.7rem 0.75rem;
-			cursor: pointer;
-			list-style: none;
+			gap: 0.4rem;
 		}
 
-		.answer details summary::-webkit-details-marker {
-			display: none;
-		}
-
-		.answer details summary::marker {
-			content: '';
-		}
-
-		.answer details summary:focus-visible {
-			outline: 2px solid #f0c674;
-			outline-offset: -2px;
-		}
-
-		.answer .marker::before {
-			content: '▸';
-			color: #96a3af;
-		}
-
-		.answer details[open] .marker::before {
-			content: '▾';
+		.head-row {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) auto;
+			gap: 0.6rem;
+			align-items: center;
 		}
 
 		.answer .num {
-			color: #96a3af;
+			margin: 0;
+			color: #8bd49c;
 			font-size: 0.78rem;
 			font-variant-numeric: tabular-nums;
 		}
@@ -251,37 +246,82 @@ export component AnswerResultScreen(&{
 		}
 
 		.answer .title {
-			color: #f3f7f0;
-			font-size: 0.95rem;
-			line-height: 1.35;
-		}
-
-		.answer details[open] summary {
-			border-bottom: 1px solid #1f2731;
-		}
-
-		.answer dl {
 			margin: 0;
-			padding: 0.6rem 0.75rem 0.85rem;
+			color: #f3f7f0;
+			font-size: 1.05rem;
+			line-height: 1.4;
+			overflow-wrap: anywhere;
+		}
+
+		.code-toggle {
+			margin: 0 0.85rem;
+			min-width: 0;
+		}
+
+		.code-toggle summary {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.3rem;
+			padding: 0.25rem 0;
+			cursor: pointer;
+			list-style: none;
+			color: #96a3af;
+			font-size: 0.72rem;
+		}
+
+		.code-toggle summary::-webkit-details-marker {
+			display: none;
+		}
+
+		.code-toggle summary::marker {
+			content: '';
+		}
+
+		.code-toggle summary:focus-visible {
+			outline: 2px solid #f0c674;
+			outline-offset: 2px;
+		}
+
+		.code-toggle .marker::before {
+			content: '▸';
+		}
+
+		.code-toggle[open] .marker::before {
+			content: '▾';
+		}
+
+		.code-toggle .hint::before {
+			content: 'タップでコードを展開';
+		}
+
+		.code-toggle[open] .hint::before {
+			content: 'タップでコードを閉じる';
+		}
+
+		.answer-dl {
+			margin: 0;
+			padding: 0.75rem 0.85rem 0.95rem;
 			display: grid;
 			gap: 0.4rem;
 		}
 
-		.answer dl div {
+		.answer-dl div {
 			display: grid;
-			grid-template-columns: 7.5rem 1fr;
+			grid-template-columns: 7.5rem minmax(0, 1fr);
 			gap: 0.5rem;
 		}
 
-		.answer dt {
+		.answer-dl dt {
 			color: #96a3af;
 			font-size: 0.78rem;
 		}
 
-		.answer dd {
+		.answer-dl dd {
 			margin: 0;
 			color: #d8e2ea;
 			line-height: 1.5;
+			overflow-wrap: anywhere;
+			min-width: 0;
 		}
 
 		@media (max-width: 640px) {
@@ -289,19 +329,25 @@ export component AnswerResultScreen(&{
 				font-size: 2rem;
 			}
 
-			.answer dl div {
+			.answer-dl div {
 				grid-template-columns: 1fr;
 				gap: 0.1rem;
 			}
 
-			.answer details summary {
-				grid-template-columns: 1rem 1.7rem auto 1fr;
-				gap: 0.4rem;
-				padding: 0.6rem;
+			.answer-head {
+				padding: 0.7rem 0.7rem 0.4rem;
 			}
 
 			.answer .title {
-				font-size: 0.88rem;
+				font-size: 0.95rem;
+			}
+
+			.code-toggle {
+				margin: 0 0.7rem;
+			}
+
+			.answer-dl {
+				padding: 0.7rem 0.7rem 0.85rem;
 			}
 		}
 		.share {
