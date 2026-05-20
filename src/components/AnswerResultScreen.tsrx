@@ -47,28 +47,25 @@ export component AnswerResultScreen(&{
 				const selectedText = choiceText(question, selectedId);
 				const correctText = choiceText(question, correctId);
 				const status = result?.status ?? 'unanswered';
-				<li
-					class={status === 'correct'
-						? 'answer correct'
-						: status === 'wrong'
-							? 'answer wrong'
-							: 'answer unanswered'}
-				>
-					<div class="answer-head">
-						<span>{String(index + 1).padStart(2, '0')}</span>
-						<strong>{statusLabel(status)}</strong>
-					</div>
-					<h3>{question.title}</h3>
-					<dl>
-						<div>
-							<dt>{'Your answer'}</dt>
-							<dd>{selectedText}</dd>
-						</div>
-						<div>
-							<dt>{'Correct answer'}</dt>
-							<dd>{correctText}</dd>
-						</div>
-					</dl>
+				<li class={status === 'correct' ? 'answer correct' : 'answer incorrect'}>
+					<details open={status !== 'correct'}>
+						<summary>
+							<span class="marker" aria-hidden="true" />
+							<span class="num">{String(index + 1).padStart(2, '0')}</span>
+							<strong class="status">{status === 'correct' ? 'correct' : 'incorrect'}</strong>
+							<span class="title">{question.title}</span>
+						</summary>
+						<dl>
+							<div>
+								<dt>{'Your answer'}</dt>
+								<dd>{selectedText}</dd>
+							</div>
+							<div>
+								<dt>{'Correct answer'}</dt>
+								<dd>{correctText}</dd>
+							</div>
+						</dl>
+					</details>
 				</li>
 			}
 		</ol>
@@ -181,10 +178,6 @@ export component AnswerResultScreen(&{
 			}
 		}
 
-		h3 {
-			font-size: 0.98rem;
-		}
-
 		.answers {
 			display: grid;
 			gap: 0.65rem;
@@ -196,51 +189,96 @@ export component AnswerResultScreen(&{
 		.answer {
 			border: 1px solid #34404d;
 			background: #0f151c;
-			padding: 0.75rem;
 		}
 
 		.answer.correct {
 			border-left: 4px solid #8bd49c;
 		}
 
-		.answer.wrong {
+		.answer.incorrect {
 			border-left: 4px solid #e06c75;
 		}
 
-		.answer.unanswered {
-			border-left: 4px solid #f0c674;
+		.answer details summary {
+			display: grid;
+			grid-template-columns: 1.1rem 2rem auto 1fr;
+			gap: 0.55rem;
+			align-items: baseline;
+			padding: 0.7rem 0.75rem;
+			cursor: pointer;
+			list-style: none;
 		}
 
-		.answer-head {
-			display: flex;
-			justify-content: space-between;
-			gap: 0.75rem;
+		.answer details summary::-webkit-details-marker {
+			display: none;
+		}
+
+		.answer details summary::marker {
+			content: '';
+		}
+
+		.answer details summary:focus-visible {
+			outline: 2px solid #f0c674;
+			outline-offset: -2px;
+		}
+
+		.answer .marker::before {
+			content: '▸';
+			color: #96a3af;
+		}
+
+		.answer details[open] .marker::before {
+			content: '▾';
+		}
+
+		.answer .num {
 			color: #96a3af;
 			font-size: 0.78rem;
+			font-variant-numeric: tabular-nums;
 		}
 
-		.answer-head strong {
-			color: #d8e2ea;
+		.answer .status {
+			font-size: 0.78rem;
+			letter-spacing: 0.06em;
 		}
 
-		dl {
+		.answer.correct .status {
+			color: #8bd49c;
+		}
+
+		.answer.incorrect .status {
+			color: #e06c75;
+		}
+
+		.answer .title {
+			color: #f3f7f0;
+			font-size: 0.95rem;
+			line-height: 1.35;
+		}
+
+		.answer details[open] summary {
+			border-bottom: 1px solid #1f2731;
+		}
+
+		.answer dl {
+			margin: 0;
+			padding: 0.6rem 0.75rem 0.85rem;
 			display: grid;
 			gap: 0.4rem;
-			margin: 0.65rem 0 0;
 		}
 
-		dl div {
+		.answer dl div {
 			display: grid;
 			grid-template-columns: 7.5rem 1fr;
 			gap: 0.5rem;
 		}
 
-		dt {
+		.answer dt {
 			color: #96a3af;
 			font-size: 0.78rem;
 		}
 
-		dd {
+		.answer dd {
 			margin: 0;
 			color: #d8e2ea;
 			line-height: 1.5;
@@ -251,9 +289,19 @@ export component AnswerResultScreen(&{
 				font-size: 2rem;
 			}
 
-			dl div {
+			.answer dl div {
 				grid-template-columns: 1fr;
 				gap: 0.1rem;
+			}
+
+			.answer details summary {
+				grid-template-columns: 1rem 1.7rem auto 1fr;
+				gap: 0.4rem;
+				padding: 0.6rem;
+			}
+
+			.answer .title {
+				font-size: 0.88rem;
 			}
 		}
 		.share {
@@ -343,12 +391,6 @@ function buildResults(
 function choiceText(question: PublicQuestion, answerId: string | null): string {
 	if (answerId === null || answerId === '') return 'no answer';
 	return question.choices.find((choice) => choice.id === answerId)?.text ?? 'unknown answer';
-}
-
-function statusLabel(status: AnswerResultEntry['status']): string {
-	if (status === 'correct') return 'OK';
-	if (status === 'wrong') return 'NG';
-	return 'NO ANSWER';
 }
 
 function formatDate(value: number): string {
