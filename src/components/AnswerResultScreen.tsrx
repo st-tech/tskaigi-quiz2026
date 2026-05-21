@@ -252,6 +252,8 @@ export component AnswerResultScreen(&{
 			font-size: 1.05rem;
 			line-height: 1.4;
 			overflow-wrap: anywhere;
+			word-break: break-word;
+			min-width: 0;
 		}
 
 		.code-toggle {

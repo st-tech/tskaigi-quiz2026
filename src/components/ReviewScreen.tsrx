@@ -111,11 +111,19 @@ export component ReviewScreen(&{
 			width: 100%;
 		}
 
+		.item strong {
+			grid-column: 2;
+			overflow-wrap: anywhere;
+			word-break: break-word;
+			min-width: 0;
+		}
+
 		.item small {
 			grid-column: 2;
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
+			min-width: 0;
 		}
 
 		.actions {

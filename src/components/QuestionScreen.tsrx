@@ -72,6 +72,9 @@ export component QuestionScreen(&{
 			color: #f3f7f0;
 			font-size: 1.13rem;
 			line-height: 1.4;
+			overflow-wrap: anywhere;
+			word-break: break-word;
+			min-width: 0;
 		}
 
 		.choices {
