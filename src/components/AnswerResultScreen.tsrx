@@ -82,7 +82,7 @@ export component AnswerResultScreen(&{
 
 		<div class="summary">
 			<div class="summary-head">
-				<h1>{'answer result'}</h1>
+				<h1>{'Answer result'}</h1>
 				<h2
 					id="answer-result-title"
 					class={isRainbow ? 'score-text rainbow' : 'score-text'}

@@ -3,7 +3,7 @@ import type { PropsWithChildren } from 'ripple';
 export component TerminalLayout(&{ children }: PropsWithChildren<{}>) {
 	<div class="shell">
 		<header class="topbar">
-			<p>{'guest@tskaigi-quiz2026:~$'}</p>
+			<p>{'Welcome to ZOZO booth @TSKaigi 2026 !!'}</p>
 			<h1>{'TypeScript Quiz'}</h1>
 		</header>
 		<main class="panel" aria-label="クイズ画面">{children}</main>

@@ -18,8 +18,11 @@ export component IntroScreen(&{
 	onShowBoothGuide: () => void;
 }) {
 	<section class="intro" aria-labelledby="intro-title">
-		<p class="eyebrow">{`day ${day} / id ${userId}`}</p>
-		<h2 id="intro-title">{'TSKaigi 2026 Booth Quiz'}</h2>
+		<p class="eyebrow">{`Day ${day} / id ${userId}`}</p>
+		<h2 id="intro-title">{'全10問のTypeScriptクイズ！'}</h2>
+		<p class="lead">
+			{'テックリードお手製、社内でも実施しているTypeScriptクイズの特別版。何問正解できるかな？'}
+		</p>
 		<dl class="status" aria-label="回答状況">
 			<div>
 				<dt>{'Questions'}</dt>
