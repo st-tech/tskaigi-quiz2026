@@ -4,8 +4,6 @@ import { categoryLabel } from '../lib/category';
 import type { AnswerEntry, AnswerKeyEntry, AnswerResultEntry, Day, PublicQuestion } from '../lib/types';
 import { CodeBlock } from './CodeBlock.tsrx';
 
-const RAINBOW_THRESHOLD = 7;
-
 export component AnswerResultScreen(&{
 	questions,
 	answers,
@@ -21,7 +19,6 @@ export component AnswerResultScreen(&{
 }) {
 	const results = buildResults(questions, answers, answerKey);
 	const correctCount = results.filter((result) => result.status === 'correct').length;
-	const isRainbow = correctCount >= RAINBOW_THRESHOLD;
 	const total = results.length;
 	const isPerfect = total > 0 && correctCount === total;
 	const shareText = buildShareText(day, correctCount, total, isPerfect);
@@ -85,7 +82,7 @@ export component AnswerResultScreen(&{
 				<h1>{'Answer result'}</h1>
 				<h2
 					id="answer-result-title"
-					class={isRainbow ? 'score-text rainbow' : 'score-text'}
+					class="score-text"
 					aria-label={`正解数 ${correctCount} / ${total}`}
 				>
 					{`${correctCount} / ${total} correct${isPerfect ? '!!' : ''}`}
@@ -158,36 +155,6 @@ export component AnswerResultScreen(&{
 			letter-spacing: 0.02em;
 			color: #8bd49c;
 			margin-bottom: 2rem;
-		}
-
-		.score-text.rainbow {
-			background: linear-gradient(
-				90deg,
-				#ff6ec7 0%,
-				#ff8c42 14%,
-				#ffd166 28%,
-				#8be78b 42%,
-				#4fc3f7 56%,
-				#9b8cff 70%,
-				#ff6ec7 84%,
-				#ff8c42 100%
-			);
-			background-size: 300% auto;
-			-webkit-background-clip: text;
-			background-clip: text;
-			color: transparent;
-			-webkit-text-fill-color: transparent;
-			animation: rainbow-shift 6s linear infinite;
-			filter: drop-shadow(0 0 0.45rem rgba(255, 110, 199, 0.25));
-		}
-
-		@keyframes rainbow-shift {
-			0% {
-				background-position: 0% 50%;
-			}
-			100% {
-				background-position: 300% 50%;
-			}
 		}
 
 		.answers {
