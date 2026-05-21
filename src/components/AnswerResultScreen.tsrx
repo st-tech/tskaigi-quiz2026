@@ -1,5 +1,6 @@
 import { track } from 'ripple';
 
+import { categoryLabel } from '../lib/category';
 import type { AnswerEntry, AnswerKeyEntry, AnswerResultEntry, Day, PublicQuestion } from '../lib/types';
 import { CodeBlock } from './CodeBlock.tsrx';
 
@@ -51,7 +52,7 @@ export component AnswerResultScreen(&{
 				<li class={status === 'correct' ? 'answer correct' : 'answer incorrect'}>
 					<div class="answer-head">
 						<div class="head-row">
-							<span class="num">{`question ${index + 1} / ${total}`}</span>
+							<span class="num">{`question ${index + 1} / ${total} / ${categoryLabel(question.category)}`}</span>
 							<strong class="status">{status === 'correct' ? 'correct' : 'incorrect'}</strong>
 						</div>
 						<h3 class="title">{question.title}</h3>

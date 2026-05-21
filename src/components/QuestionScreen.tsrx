@@ -1,3 +1,4 @@
+import { categoryLabel } from '../lib/category';
 import type { PublicQuestion } from '../lib/types';
 import { CodeBlock } from './CodeBlock.tsrx';
 
@@ -22,7 +23,7 @@ export component QuestionScreen(&{
 }: QuestionScreenProps) {
 	<section class="question" aria-labelledby={questionTitleId(question.id)}>
 		<p id={questionProgressId(question.id)} class="progress" aria-live="polite">
-			{`question ${index + 1} / ${total} / ${question.category}`}
+			{`question ${index + 1} / ${total} / ${categoryLabel(question.category)}`}
 		</p>
 		<h2 id={questionTitleId(question.id)}>{question.title}</h2>
 		if (question.code && question.lang) {
