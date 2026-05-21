@@ -425,7 +425,7 @@ function buildShareText(day: Day, correctCount: number, total: number, isPerfect
 		'TSKaigi 2026のZOZOブースでTypeScriptクイズに挑戦しました！',
 		`Day${day}の結果は...${score}`,
 		'',
-		'#TSKaigi #TSKaigi2026 #ZOZO',
+		'#TSKaigi #TSKaigi2026 #zozo_engineer',
 	].join('\n');
 }
 
