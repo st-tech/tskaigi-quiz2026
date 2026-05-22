@@ -1,5 +1,5 @@
-import type { PublicQuestion } from '../lib/types';
-import type { AnswerEntry } from '../lib/types';
+import { t } from '../lib/i18n';
+import type { AnswerEntry, PublicQuestion } from '../lib/types';
 
 export component ReviewScreen(&{
 	questions,
@@ -21,7 +21,7 @@ export component ReviewScreen(&{
 			<p>{'review'}</p>
 			<h2 id="review-title">{`${countAnswered(answers)} / ${questions.length} answered`}</h2>
 		</div>
-		<ol class="list" aria-label="回答一覧">
+		<ol class="list" aria-label={t.answerListAriaLabel}>
 			for (const question of questions; index index; key question.id) {
 				const answer = answers.find((entry) => entry.questionId === question.id)?.answerId ?? null;
 				const answerText =
@@ -29,7 +29,7 @@ export component ReviewScreen(&{
 				const displayAnswer =
 					answer === null ? 'no answer' : answerText;
 				const accessibleAnswer =
-					answer === null ? '未回答' : answerText;
+					answer === null ? t.unanswered : answerText;
 				<li>
 					<button
 						type="button"
@@ -150,7 +150,7 @@ export component ReviewScreen(&{
 }
 
 function reviewItemLabel(index: number, title: string, answer: string): string {
-	return `第${index + 1}問: ${title}。現在の回答: ${answer}。回答を編集`;
+	return t.reviewItemLabel(index, title, answer);
 }
 
 function countAnswered(answers: AnswerEntry[]): number {

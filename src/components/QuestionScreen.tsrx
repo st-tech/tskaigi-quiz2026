@@ -1,4 +1,5 @@
 import { categoryLabel } from '../lib/category';
+import { t } from '../lib/i18n';
 import type { PublicQuestion } from '../lib/types';
 import { CodeBlock } from './CodeBlock.tsrx';
 
@@ -30,7 +31,7 @@ export component QuestionScreen(&{
 			<CodeBlock code={question.code} lang={question.lang} />
 		}
 		<fieldset class="choices" aria-describedby={questionProgressId(question.id)}>
-			<legend class="visually-hidden">{`第${index + 1}問の回答を選択`}</legend>
+			<legend class="visually-hidden">{t.choiceLegend(index)}</legend>
 			for (const choice of question.choices; index choiceIndex) {
 				<label class={selected === choice.id ? 'choice selected' : 'choice'}>
 					<input

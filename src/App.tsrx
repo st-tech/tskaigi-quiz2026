@@ -18,6 +18,7 @@ import type {
 	Day,
 	PublicQuestion,
 } from './lib/types';
+import { t } from './lib/i18n';
 import { getOrCreateUserId } from './lib/userId';
 
 type Screen = { kind: 'intro' } | { kind: 'quiz'; index: number } | { kind: 'review' } | {
@@ -100,10 +101,10 @@ export component App() {
 			screen = { kind: 'result' };
 		} catch (scanError) {
 			error = scanError instanceof AnswerKeyCodecError
-				? '正答QRを読み取れませんでした。スタッフ画面のQRを読み取ってください。'
+				? t.invalidQrError
 				: scanError instanceof Error
 					? scanError.message
-					: '正答QRを読み取れませんでした。';
+					: t.invalidQrError;
 			screen = { kind: 'booth' };
 		}
 	};
@@ -317,20 +318,20 @@ function validateAnswerKeyForQuestions(
 
 	const unknownEntry = answerKey.find((entry) => !questionsById.has(entry.questionId));
 	if (unknownEntry) {
-		throw new Error('この日の正答QRではありません。スタッフに当日のQRを表示してもらってください。');
+		throw new Error(t.wrongDayQrError);
 	}
 
 	const missingQuestion = questionsForDay.find(
 		(question) => !answerKeyByQuestionId.has(question.id),
 	);
 	if (missingQuestion) {
-		throw new Error('正答QRに必要な問題が含まれていません。スタッフにQRを確認してもらってください。');
+		throw new Error(t.missingQuestionQrError);
 	}
 
 	for (const question of questionsForDay) {
 		const answerId = answerKeyByQuestionId.get(question.id);
 		if (answerId === undefined || !question.choices.some((choice) => choice.id === answerId)) {
-			throw new Error('正答QRに不明な選択肢が含まれています。スタッフにQRを確認してもらってください。');
+			throw new Error(t.unknownChoiceQrError);
 		}
 	}
 }

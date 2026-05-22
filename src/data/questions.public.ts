@@ -1,4 +1,6 @@
+import { locale } from '../lib/i18n';
 import type { PublicQuestion } from '../lib/types';
+import { CHOICE_TEXTS_EN, QUESTION_TITLES_EN } from './questions.en';
 
 export const QUESTIONS = [
 	{
@@ -428,5 +430,13 @@ export const QUESTIONS = [
 ] satisfies PublicQuestion[];
 
 export function getQuestionsForDay(day: 1 | 2, limit = 10): PublicQuestion[] {
-	return QUESTIONS.filter((question) => question.day === day).slice(0, limit);
+	const questions = QUESTIONS.filter((question) => question.day === day).slice(0, limit);
+	if (locale === 'en') {
+		return questions.map((q) => ({
+			...q,
+			title: QUESTION_TITLES_EN[q.id] ?? q.title,
+			choices: q.choices.map((c) => ({ ...c, text: CHOICE_TEXTS_EN[c.id] ?? c.text })),
+		}));
+	}
+	return questions;
 }

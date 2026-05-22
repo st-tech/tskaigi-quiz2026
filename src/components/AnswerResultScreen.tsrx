@@ -1,6 +1,7 @@
 import { track } from 'ripple';
 
 import { categoryLabel } from '../lib/category';
+import { formatDate, t } from '../lib/i18n';
 import type { AnswerEntry, AnswerKeyEntry, AnswerResultEntry, Day, PublicQuestion } from '../lib/types';
 import { CodeBlock } from './CodeBlock.tsrx';
 
@@ -38,7 +39,7 @@ export component AnswerResultScreen(&{
 	};
 
 	<section class="result" aria-labelledby="answer-result-title">
-		<ol class="answers" aria-label="正誤結果">
+		<ol class="answers" aria-label={t.answerResultListAriaLabel}>
 			for (const question of questions; index index; key question.id) {
 				const result = results.find((entry) => entry.questionId === question.id);
 				const selectedId = result?.selectedAnswerId ?? null;
@@ -58,7 +59,8 @@ export component AnswerResultScreen(&{
 						<details class="code-toggle">
 							<summary>
 								<span class="marker" aria-hidden="true" />
-								<span class="hint" />
+								<span class="hint-closed">{t.codeExpandHint}</span>
+								<span class="hint-open">{t.codeCollapseHint}</span>
 							</summary>
 							<CodeBlock code={question.code} lang={question.lang} />
 						</details>
@@ -83,16 +85,16 @@ export component AnswerResultScreen(&{
 				<h2
 					id="answer-result-title"
 					class="score-text"
-					aria-label={`正解数 ${correctCount} / ${total}`}
+					aria-label={t.scoreAriaLabel(correctCount, total)}
 				>
 					{`${correctCount} / ${total} correct${isPerfect ? '!!' : ''}`}
 				</h2>
-				<p class="meta">{`${formatDate(checkedAt)} / 詳しい説明は後日公開予定です。`}</p>
+				<p class="meta">{t.resultMeta(formatDate(checkedAt))}</p>
 			</div>
 
 		</div>
 
-		<div class="share" aria-label="結果をシェア">
+		<div class="share" aria-label={t.shareLabel}>
 			<p class="share-eyebrow">{'share your score'}</p>
 			<div class="share-buttons">
 				<a
@@ -260,12 +262,16 @@ export component AnswerResultScreen(&{
 			content: '▾';
 		}
 
-		.code-toggle .hint::before {
-			content: 'タップでコードを展開';
+		.hint-open {
+			display: none;
 		}
 
-		.code-toggle[open] .hint::before {
-			content: 'タップでコードを閉じる';
+		.code-toggle[open] .hint-closed {
+			display: none;
+		}
+
+		.code-toggle[open] .hint-open {
+			display: inline;
 		}
 
 		.answer-dl {
@@ -409,24 +415,8 @@ function choiceText(question: PublicQuestion, answerId: string | null): string {
 	return question.choices.find((choice) => choice.id === answerId)?.text ?? 'unknown answer';
 }
 
-function formatDate(value: number): string {
-	return new Intl.DateTimeFormat('ja-JP', {
-		month: '2-digit',
-		day: '2-digit',
-		hour: '2-digit',
-		minute: '2-digit',
-	}).format(value);
-}
-
-
 function buildShareText(day: Day, correctCount: number, total: number, isPerfect: boolean): string {
-	const score = isPerfect ? `${total}問全問正解！🎉` : `${correctCount}問正解！🙌`;
-	return [
-		'TSKaigi 2026のZOZOブースでTypeScriptクイズに挑戦しました！',
-		`Day${day}の結果は...${score}`,
-		'',
-		'#TSKaigi #TSKaigi2026 #zozo_engineer',
-	].join('\n');
+	return t.buildShareText(day, correctCount, total, isPerfect);
 }
 
 function buildXUrl(text: string): string {
