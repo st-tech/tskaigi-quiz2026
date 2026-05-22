@@ -87,9 +87,9 @@ export component BoothGuide(&{
 		}
 
 		.actions {
-			display: flex;
+			display: grid;
+			grid-template-columns: 1fr 1fr;
 			gap: 0.5rem;
-			flex-wrap: wrap;
 		}
 
 		button {
@@ -101,12 +101,40 @@ export component BoothGuide(&{
 			padding: 0.45rem 0.75rem;
 			font: inherit;
 			cursor: pointer;
+			transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 		}
 
 		button.primary {
+			min-height: 3.2rem;
+			font-size: 1.05rem;
+			font-weight: 800;
+			letter-spacing: 0.04em;
 			border-color: #8bd49c;
 			background: #8bd49c;
 			color: #0b0f14;
+			box-shadow: 0 0 0 0 rgba(139, 212, 156, 0.55);
+			animation: booth-primary-pulse 2.2s ease-in-out infinite;
+		}
+
+		button.primary:hover {
+			background: #aef1c0;
+			border-color: #aef1c0;
+			color: #0b0f14;
+			transform: translateY(-1px);
+		}
+
+		button.primary:active {
+			transform: translateY(0);
+		}
+
+		@keyframes booth-primary-pulse {
+			0%,
+			100% {
+				box-shadow: 0 0 0 0 rgba(139, 212, 156, 0.55);
+			}
+			50% {
+				box-shadow: 0 0 0 0.65rem rgba(139, 212, 156, 0);
+			}
 		}
 	</style>
 }

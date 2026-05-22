@@ -28,6 +28,11 @@ export interface Messages {
 	codeExpandHint: string;
 	codeCollapseHint: string;
 	shareLabel: string;
+	shareCta: string;
+	sharePostButton: string;
+	shareCopyButton: string;
+	shareCopiedButton: string;
+	shareCopyFailedButton: string;
 	buildShareText: (day: number, correctCount: number, total: number, isPerfect: boolean) => string;
 	// ResultQrScanner
 	cameraStarting: string;

@@ -95,18 +95,23 @@ export component AnswerResultScreen(&{
 		</div>
 
 		<div class="share" aria-label={t.shareLabel}>
-			<p class="share-eyebrow">{'share your score'}</p>
+			<h3 class="share-cta">{t.shareCta}</h3>
+			<pre class="share-preview" aria-label="シェアされる文章のプレビュー">{shareText}</pre>
 			<div class="share-buttons">
 				<a
-					class="share-btn x"
+					class="share-btn x primary"
 					href={buildXUrl(shareText)}
 					target="_blank"
 					rel="noopener noreferrer"
 				>
-					{'Post on X'}
+					{t.sharePostButton}
 				</a>
 				<button type="button" class="share-btn copy" onClick={() => copyShare()}>
-					{copyStatus === 'copied' ? 'Copied!' : copyStatus === 'error' ? 'Copy failed' : 'Copy text'}
+					{copyStatus === 'copied'
+						? t.shareCopiedButton
+						: copyStatus === 'error'
+							? t.shareCopyFailedButton
+							: t.shareCopyButton}
 				</button>
 			</div>
 		</div>
@@ -328,26 +333,39 @@ export component AnswerResultScreen(&{
 		}
 		.share {
 			display: grid;
-			gap: 0.55rem;
+			gap: 0.7rem;
 			margin-top: 1.2rem;
 			padding-top: 1rem;
 			border-top: 1px solid #34404d;
 		}
 
-		.share-eyebrow {
+		.share-preview {
 			margin: 0;
-			color: #8bd49c;
-			font-size: 0.78rem;
-			letter-spacing: 0.18em;
-			text-transform: uppercase;
+			padding: 0.85rem 0.95rem;
+			background: #121820;
+			border: 1px solid #2f3945;
+			border-radius: 4px;
+			color: #d8e2ea;
+			font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+			font-size: 0.82rem;
+			line-height: 1.6;
+			white-space: pre-wrap;
+			overflow-wrap: anywhere;
+			word-break: break-word;
+		}
+
+		.share-cta {
+			margin: 0.25rem 0 0;
+			color: #f0c674;
+			font-size: 1.2rem;
+			font-weight: 700;
 			text-align: center;
+			line-height: 1.4;
 		}
 
 		.share-buttons {
-			display: flex;
-			flex-wrap: wrap;
+			display: grid;
 			gap: 0.55rem;
-			justify-content: center;
 		}
 
 		.share-btn {
@@ -364,21 +382,49 @@ export component AnswerResultScreen(&{
 			font-size: 0.85rem;
 			text-decoration: none;
 			cursor: pointer;
-			transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+			transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 		}
 
 		.share-btn:hover {
 			background: #1a2330;
 		}
 
-		.share-btn.x:hover {
-			border-color: #f3f7f0;
-			color: #f3f7f0;
+		.share-btn.primary {
+			min-height: 3.4rem;
+			padding: 0.6rem 1.2rem;
+			font-size: 1.15rem;
+			font-weight: 800;
+			letter-spacing: 0.04em;
+			border-color: #8bd49c;
+			background: #8bd49c;
+			color: #0b0f14;
+			box-shadow: 0 0 0 0 rgba(139, 212, 156, 0.55);
+			animation: share-primary-pulse 2.2s ease-in-out infinite;
+		}
+
+		.share-btn.primary:hover {
+			background: #aef1c0;
+			border-color: #aef1c0;
+			color: #0b0f14;
+			transform: translateY(-1px);
+		}
+
+		.share-btn.primary:active {
+			transform: translateY(0);
+		}
+
+		@keyframes share-primary-pulse {
+			0%,
+			100% {
+				box-shadow: 0 0 0 0 rgba(139, 212, 156, 0.55);
+			}
+			50% {
+				box-shadow: 0 0 0 0.65rem rgba(139, 212, 156, 0);
+			}
 		}
 
 		.share-btn.copy {
 			font-variant-numeric: tabular-nums;
-			min-width: 7rem;
 		}
 	</style>
 }

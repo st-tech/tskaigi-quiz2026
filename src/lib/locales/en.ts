@@ -22,13 +22,26 @@ export const en: Messages = {
 	codeExpandHint: 'Tap to expand code',
 	codeCollapseHint: 'Tap to collapse code',
 	shareLabel: 'Share your result',
+	shareCta: 'Add your thoughts and post it on X!',
+	sharePostButton: 'Post on X',
+	shareCopyButton: 'Copy text',
+	shareCopiedButton: 'Copied!',
+	shareCopyFailedButton: 'Copy failed',
 	buildShareText: (day, correctCount, total, isPerfect) => {
+		const hashtags = '#TSKaigi #TSKaigi2026 #zozo_engineer';
+		if (correctCount < 5) {
+			return [
+				'I gave the TypeScript quiz at the ZOZO booth at TSKaigi 2026 a shot!',
+				'',
+				hashtags,
+			].join('\n');
+		}
 		const score = isPerfect ? `All ${total} correct! 🎉` : `${correctCount} correct! 🙌`;
 		return [
 			'I took the TypeScript quiz at the ZOZO booth at TSKaigi 2026!',
 			`Day ${day} result: ${score}`,
 			'',
-			'#TSKaigi #TSKaigi2026 #zozo_engineer',
+			hashtags,
 		].join('\n');
 	},
 	cameraStarting: 'Starting camera...',

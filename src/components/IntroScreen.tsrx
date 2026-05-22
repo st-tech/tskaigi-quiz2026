@@ -99,9 +99,8 @@ export component IntroScreen(&{
 		}
 
 		.actions {
-			display: flex;
+			display: grid;
 			gap: 0.5rem;
-			flex-wrap: wrap;
 		}
 
 		button {
