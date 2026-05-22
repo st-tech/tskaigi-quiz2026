@@ -1,3 +1,5 @@
+import { t } from '../lib/i18n';
+
 export component BoothGuide(&{
 	day,
 	total,
@@ -15,11 +17,9 @@ export component BoothGuide(&{
 }) {
 	<section class="booth" aria-labelledby="booth-title">
 		<p class="eyebrow">{`submitted / day ${day} / id ${userId}`}</p>
-		<h2 id="booth-title">{'ブースで結果を確認してください'}</h2>
-		<p class="lead">
-			{'スタッフが提示するQRコードをこの端末で読み取ると、あなたの回答の正誤を確認できます。'}
-		</p>
-		<dl class="status" aria-label="回答状況">
+		<h2 id="booth-title">{t.boothTitle}</h2>
+		<p class="lead">{t.boothLead}</p>
+		<dl class="status" aria-label={t.statusAriaLabel}>
 			<div>
 				<dt>{'Questions'}</dt>
 				<dd>{String(total)}</dd>

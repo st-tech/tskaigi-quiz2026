@@ -1,12 +1,14 @@
 import type { PropsWithChildren } from 'ripple';
 
+import { t } from '../lib/i18n';
+
 export component TerminalLayout(&{ children }: PropsWithChildren<{}>) {
 	<div class="shell">
 		<header class="topbar">
 			<p>{'Welcome to ZOZO booth @TSKaigi 2026 !!'}</p>
 			<h1>{'TypeScript Quiz'}</h1>
 		</header>
-		<main class="panel" aria-label="クイズ画面">{children}</main>
+		<main class="panel" aria-label={t.quizPanelAriaLabel}>{children}</main>
 	</div>
 
 	<style>

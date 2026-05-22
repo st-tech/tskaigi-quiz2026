@@ -1,6 +1,8 @@
 import { BarcodeDetector } from 'barcode-detector/ponyfill';
 import { track } from 'ripple';
 
+import { t } from '../lib/i18n';
+
 type VideoWithFrameCallback = HTMLVideoElement & {
 	requestVideoFrameCallback?: (callback: (now: number, metadata: unknown) => void) => number;
 	cancelVideoFrameCallback?: (handle: number) => void;
@@ -17,7 +19,7 @@ export component ResultQrScanner(&{
 	onError: (message: string) => void;
 	onCancel: () => void;
 }) {
-	let &[status] = track('カメラを起動しています');
+	let &[status] = track(t.cameraStarting);
 
 	const startScanner = (video: HTMLVideoElement) => {
 		let stopped = false;
@@ -54,7 +56,7 @@ export component ResultQrScanner(&{
 					const detected = await detector.detect(video);
 					const qr = detected.find((item) => ANSWER_KEY_PATTERN.test(item.rawValue.trim()));
 					if (qr) {
-						status = 'QRを読み取りました';
+						status = t.qrScanned;
 						stop();
 						onScan(qr.rawValue);
 						return;
@@ -62,7 +64,7 @@ export component ResultQrScanner(&{
 				}
 			} catch (error) {
 				const message =
-					error instanceof Error ? error.message : 'QRの読み取りに失敗しました';
+					error instanceof Error ? error.message : t.qrReadFailed;
 				onError(message);
 			}
 			schedule();
@@ -71,7 +73,7 @@ export component ResultQrScanner(&{
 		void (async () => {
 			try {
 				if (!navigator.mediaDevices?.getUserMedia) {
-					throw new Error('このブラウザではカメラを利用できません');
+					throw new Error(t.cameraUnavailable);
 				}
 
 				stream = await navigator.mediaDevices.getUserMedia(
@@ -91,12 +93,12 @@ export component ResultQrScanner(&{
 
 				video.srcObject = stream;
 				await video.play();
-				status = 'スタッフのQRをカメラにかざしてください';
+				status = t.qrPrompt;
 				schedule();
 			} catch (error) {
 				const message =
-					error instanceof Error ? error.message : 'カメラを起動できませんでした';
-				status = 'カメラエラー';
+					error instanceof Error ? error.message : t.cameraStartFailed;
+				status = t.cameraError;
 				onError(message);
 			}
 		})();
@@ -113,7 +115,7 @@ export component ResultQrScanner(&{
 			ref={(node: HTMLVideoElement) => startScanner(node)}
 			playsInline
 			muted
-			aria-label="スタッフQR読み取り用カメラプレビュー"
+			aria-label={t.cameraAriaLabel}
 			aria-describedby="scanner-status"
 		/>
 		<p id="scanner-status" class="status" role="status" aria-live="polite">{status}</p>

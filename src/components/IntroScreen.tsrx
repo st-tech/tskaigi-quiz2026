@@ -1,3 +1,5 @@
+import { t } from '../lib/i18n';
+
 export component IntroScreen(&{
 	day,
 	total,
@@ -19,11 +21,9 @@ export component IntroScreen(&{
 }) {
 	<section class="intro" aria-labelledby="intro-title">
 		<p class="eyebrow">{`Day ${day} / id ${userId}`}</p>
-		<h2 id="intro-title">{'全10問のTypeScriptクイズ！'}</h2>
-		<p class="lead">
-			{'テックリードお手製、社内でも実施しているTypeScriptクイズの特別版。何問正解できるかな？'}
-		</p>
-		<dl class="status" aria-label="回答状況">
+		<h2 id="intro-title">{t.introTitle}</h2>
+		<p class="lead">{t.introLead}</p>
+		<dl class="status" aria-label={t.statusAriaLabel}>
 			<div>
 				<dt>{'Questions'}</dt>
 				<dd>{String(total)}</dd>
@@ -37,7 +37,7 @@ export component IntroScreen(&{
 			<button
 				type="button"
 				class="primary"
-				aria-label={answered > 0 ? '未回答の問題から再開' : 'クイズを開始'}
+				aria-label={answered > 0 ? t.resumeButtonAriaLabel : t.startButtonAriaLabel}
 				onClick={() => onStart()}
 			>
 				{answered > 0 ? 'Continue' : 'Start'}

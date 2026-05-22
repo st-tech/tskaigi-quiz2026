@@ -1,0 +1,33 @@
+export const QUESTION_TITLES_EN: Record<string, string> = {
+	bebc: 'Does the following code produce an error? (tsconfig strict:true)',
+	d3f3: 'What is the type of X?',
+	'610c': 'What is the type of X?',
+	'5851': 'What is the correct behavior of satisfies?',
+	'849e': 'What language is TypeScript 7 being developed in?',
+	b61b: 'What is the output of the following code?',
+	'5b5c': 'What is the result of the following code?',
+	'4940': 'Which of the following is a reserved word in JavaScript (ECMAScript)?',
+	'57e0': 'Which runtime produces an error when running the following JavaScript file?',
+	e20e: 'Which runtime produces an error when running the following JavaScript file?',
+	'3867': 'What is the development code name for TypeScript 7 (tsgo)?',
+	'2ff0': 'What JavaScript code does the TypeScript compiler output for an enum?',
+	'664e': 'Which of the following produces an error with erasableSyntaxOnly?',
+	d383: 'Which has a return type inferred as void?',
+	'8d76': 'What is the result of the following expression?',
+	'1149': 'What is the result of the following expression?',
+	'1baf': 'Which runtime produces an error when running the following TypeScript file?',
+	a999: 'Which environment supports the globalThis.navigator.share() method?',
+	'40d5': 'Which organization/spec group standardizes the URL class?',
+	'2fa8': 'Which organization/spec group standardizes the fetch API?',
+};
+
+export const CHOICE_TEXTS_EN: Record<string, string> = {
+	'1adf': 'Runtime error',
+	'2443': 'Compile error',
+	'8d92': 'No error',
+	d281: 'The type of x is { a: number; b: number }',
+	fd42: 'The type of x is { a: number; b: unknown }',
+	'61a7': 'Compile error',
+	e643: 'Expanded into an IIFE that builds the Hoge object',
+	'3594': 'Expanded to inline constants like const enum',
+};
