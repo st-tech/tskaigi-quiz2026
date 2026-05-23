@@ -50,13 +50,31 @@ export interface Messages {
 	unknownChoiceQrError: string;
 }
 
+const LOCALE_STORAGE_KEY = 'tskaigi-quiz2026:locale';
+
 function detectLocale(): Locale {
+	try {
+		const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
+		if (stored === 'ja' || stored === 'en') return stored;
+	} catch (_) {
+		// localStorage が使えない環境はスキップ
+	}
 	const lang = navigator.languages?.[0] ?? navigator.language ?? '';
 	return lang.startsWith('ja') ? 'ja' : 'en';
 }
 
 export const locale: Locale = detectLocale();
 export const t: Messages = locale === 'ja' ? ja : en;
+
+export function setLocale(next: Locale): void {
+	if (next === locale) return;
+	try {
+		localStorage.setItem(LOCALE_STORAGE_KEY, next);
+	} catch (_) {
+		// localStorage が使えない環境はスキップ
+	}
+	location.reload();
+}
 
 export function formatDate(value: number): string {
 	return new Intl.DateTimeFormat(locale === 'ja' ? 'ja-JP' : 'en-US', {

@@ -1,4 +1,4 @@
-import { t } from '../lib/i18n';
+import { locale, setLocale, t } from '../lib/i18n';
 
 export component IntroScreen(&{
 	day,
@@ -20,6 +20,24 @@ export component IntroScreen(&{
 	onShowBoothGuide: () => void;
 }) {
 	<section class="intro" aria-labelledby="intro-title">
+		<div class="locale-switch" role="group" aria-label="Language / 言語">
+			<button
+				type="button"
+				class={locale === 'ja' ? 'locale-btn active' : 'locale-btn'}
+				aria-pressed={locale === 'ja'}
+				onClick={() => setLocale('ja')}
+			>
+				{'日本語'}
+			</button>
+			<button
+				type="button"
+				class={locale === 'en' ? 'locale-btn active' : 'locale-btn'}
+				aria-pressed={locale === 'en'}
+				onClick={() => setLocale('en')}
+			>
+				{'English'}
+			</button>
+		</div>
 		<p class="eyebrow">{`Day ${day} / id ${userId}`}</p>
 		<h2 id="intro-title">{t.introTitle}</h2>
 		<p class="lead">{t.introLead}</p>
@@ -58,6 +76,37 @@ export component IntroScreen(&{
 		.intro {
 			display: grid;
 			gap: 0.9rem;
+		}
+
+		.locale-switch {
+			justify-self: end;
+			display: inline-flex;
+			gap: 0.3rem;
+			margin-bottom: -0.4rem;
+		}
+
+		.locale-btn {
+			min-height: auto;
+			padding: 0.3rem 0.65rem;
+			border-radius: 4px;
+			border: 1px solid #34404d;
+			background: #121820;
+			color: #96a3af;
+			font: inherit;
+			font-size: 0.78rem;
+			cursor: pointer;
+			transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+		}
+
+		.locale-btn:hover {
+			color: #d8e2ea;
+			border-color: #4a5563;
+		}
+
+		.locale-btn.active {
+			border-color: #8bd49c;
+			background: #8bd49c;
+			color: #0b0f14;
 		}
 
 		.eyebrow {
